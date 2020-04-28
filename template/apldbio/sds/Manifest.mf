@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Content-Type: Std
+Implementation-Version: 7500 Software v2.3
+Specification-Vendor: Applied Biosystems
+Specification-Title: Experiment Document Specification
+Specification-Version: 1.1.1
+

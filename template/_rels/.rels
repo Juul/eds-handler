@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Target="xl/workbook.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"/>
+    <Relationship Id="rId2" Target="docProps/core.xml" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"/>
+    <Relationship Id="rId3" Target="docProps/app.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"/>
+    <Relationship Id="rId4" Target="docProps/custom.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties"/>
+    <Relationship Id="rId5" Target="apldbio/sds/Manifest.mf" Type="http://www.appliedbiosystems.com/schemas"/>
+    <Relationship Id="rId6" Target="apldbio/sds/experiment.xml" Type="http://www.appliedbiosystems.com/schemas"/>
+    <Relationship Id="rId7" Target="apldbio/sds/plate_setup.xml" Type="http://www.appliedbiosystems.com/schemas"/>
+    <Relationship Id="rId8" Target="apldbio/sds/tcprotocol.xml" Type="http://www.appliedbiosystems.com/schemas"/>
+    <Relationship Id="rId9" Target="apldbio/sds/analysis_protocol.xml" Type="http://www.appliedbiosystems.com/schemas"/>
+</Relationships>

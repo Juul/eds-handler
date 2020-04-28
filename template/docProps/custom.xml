@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Properties
+    xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Document Type" pid="2">
+        <vt:lpwstr>SDS</vt:lpwstr>
+    </property>
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Originator" pid="3">
+        <vt:lpwstr>Aztec 1.0</vt:lpwstr>
+    </property>
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Instrument" pid="4">
+        <vt:lpwstr/>
+    </property>
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Operator" pid="5">
+        <vt:lpwstr/>
+    </property>
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Protocol" pid="6">
+        <vt:lpwstr>ef2e45e57d9c462cb0a92521acfc5188</vt:lpwstr>
+    </property>
+    <property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}"
+        name="Experiment" pid="7">
+        <vt:lpwstr>Untitled</vt:lpwstr>
+    </property>
+</Properties>
