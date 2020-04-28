@@ -531,6 +531,24 @@ function getPlateMetadata(zip, cb) {
       if(node && node.innerHTML && node.innerHTML.trim()) {
         metadata.operatorName = node.innerHTML.trim();
       }
+
+      const targets = {};
+
+      var el, name, reporter;
+      var nodes = doc.querySelectorAll("Experiment > Detectors");
+      for(node of nodes) {
+        el = node.querySelector("Name");
+        if(!el || !el.innerHTML || !el.innerHTML.trim()) continue;
+        name = el.innerHTML.trim();
+        
+        el = node.querySelector("Reporter");
+        if(!el || !el.innerHTML || !el.innerHTML.trim()) continue;
+        reporter = el.innerHTML.trim();
+        
+        targets[name] = reporter;
+      }
+
+      metadata.targets = targets;
       
       cb(null, metadata);
       
@@ -549,16 +567,16 @@ function fieldsToObject(header, fields) {
   return o;
 }
 
-function parseAnalysisResult(zip, cb) {
+function parseAnalysisResult(zip, targets, cb) {
   zip.file('apldbio/sds/analysis_result.txt').async('text').then(function(data) {  
 
     const lines = data.split(/\r?\n/);
     
     var header;
 
-    var output = [];
+    var wells = {};
     
-    var line, fields, wellIndex;
+    var line, fields, wellIndex, wellName, target;
     for(line of lines) {
       fields = line.split(/\t/);
       if(!fields[0]) continue;
@@ -572,12 +590,23 @@ function parseAnalysisResult(zip, cb) {
       if(typeof wellIndex !== 'number' || !(wellIndex >= 0)) {
         continue;
       }
-      output.push(
-        fieldsToObject(header, fields)
-      );
+      
+      wellName = wellIndexToName(wellIndex);
+      
+      target = fields[2].trim();
+      if(!target) continue;
+      if(targets[target]) {
+        target = targets[target];
+      }
+      
+      if(!wells[wellName]) {
+        wells[wellName] = {};
+      }
+
+      wells[wellName][target] = fieldsToObject(header, fields);
     }    
     
-    cb(null, output);
+    cb(null, wells);
 
   }).catch(cb);
 }
@@ -647,6 +676,25 @@ function parseMultiComponentData(zip, cb) {
   }).catch(cb);
 }
 
+function combineData(analysisResults, multiComponentData) {
+  var out = {};
+  var wellName;
+  
+  for(wellName in analysisResults) {
+    out[wellName] = {
+      result: analysisResults[wellName]
+    };
+  }
+
+  for(wellName in multiComponentData) {
+    if(!out[wellName]) {
+      out[wellName] = {};
+    }
+    out[wellName].raw = multiComponentData[wellName]
+  }
+  return out;
+}
+
 function parse(filepathOrData, cb) {
   loadZip(filepathOrData, function(err, zip) {
     if(err) return cb(err);
@@ -654,13 +702,16 @@ function parse(filepathOrData, cb) {
     getPlateMetadata(zip, function(err, metadata) {
       if(err) return cb(err);
 
-      parseAnalysisResult(zip, function(err, results) {
+      parseAnalysisResult(zip, metadata.targets, function(err, results) {
         if(err) return cb(err);
 
-        parseMultiComponentData(zip, function(err, wells) {
+        parseMultiComponentData(zip, function(err, data) {
           if(err) return cb(err);
         
-          console.log('got:', wells['B9']['VIC'][33]);
+          cb(null, {
+            metadata: metadata,
+            wells: combineData(results, data)
+          });
 
         });
       });
