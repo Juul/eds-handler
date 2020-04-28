@@ -1,6 +1,7 @@
 {
   "name": "eds-handler",
   "version": "0.0.1",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/renegadebio/eds-handler"
@@ -8,7 +9,11 @@
   "dependencies": {
     "jszip": "^3.4.0",
     "klaw": "^3.0.0",
-    "through2": "^3.0.1"
+    "through2": "^3.0.1",
+    "jsdom": "^16.2.0"
+  },
+  "browser": {
+    "jsdom": "./jsdom_stub.js"
   },
   "author": {
     "name": "Marc Juul",
@@ -16,7 +21,6 @@
     "url": "https://github.com/juul"
   },
   "devDependencies": {
-    "jsdom": "^16.2.0",
     "tape": "^4.13.2"
   },
   "scripts": {

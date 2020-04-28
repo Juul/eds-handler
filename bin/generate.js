@@ -18,7 +18,7 @@ eds.generate(
       'H12': false,
       'H11': true
     }
-  }, function(err, result) {
+  }, 'nodebuffer', function(err, result) {
     if(err) return console.error("Error:", err);
     
     fs.writeFileSync('out.eds', result);

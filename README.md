@@ -6,6 +6,15 @@ A work-in-progress limited generator and parser for the `.eds` file format used 
 
 The `template/` dir contains an extracted copy of a working `.eds` file from before the qPCR run was started. The generator modifies files from this template as indicated in the "Template modifications" section and generates a new zip file from the modified content.
 
+```
+const eds = require('eds-handler');
+
+eds.generate(dirPath, filename, data, type, cb)
+```
+
+Where `type` is the output data type. It must be one of the types supported by [JSZip](https://stuk.github.io/jszip/documentation/api_jszip/generate_async.html) e.g. 'nodebuffer' or 'blob'.
+
+
 # Parser
 
 The parser takes a filepath or zip file data as input and outputs parsed data including metadata, Ct values and raw data.
@@ -178,3 +187,8 @@ Re-populate with new equivalent elements based on plate map.
         </JaxbSettingValue>
     </JaxbAnalysisSettings>
 ```
+
+# ToDo
+
+Use [browser field](https://github.com/OOP-Code-Bunny/browserify-handbook#browser-field) in package.json to ensure that e.g. the 'fs' module is not required.
+

@@ -5,11 +5,43 @@ const path = require('path');
 const through = require('through2');
 const klaw = require('klaw');
 const JSZip = require('jszip');
-const JSDOM = require('jsdom').JSDOM;
 
+var parseDOM;
+
+// not in browser
 if(typeof Node === 'undefined') {
   var ELEMENT_NODE = 1;
   var TEXT_NODE = 3;
+
+  const JSDOM = require('jsdom').JSDOM;
+  
+  parseDOM = function(str, mimetype) {
+    
+    return new JSDOM(str, {
+      contentType: mimetype
+    }).window.document;
+  }
+  
+} else { // in browser
+  
+  var ELEMENT_NODE = Node.ELEMENT_NODE;
+  var TEXT_NODE = Node.TEXT_NODE;
+
+  parseDOM = function(str, mimetype) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(str, mimetype);
+
+    // Check for errors according to:
+    // see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
+    var errs = doc.getElementsByTagName('parsererror');
+    if(errs.length) {
+      var txt = errs[0].textContent;
+      txt = txt.replace(/Below is a rendering.*/i, ''); // remove useless message
+      txt = txt.replace(':', ': ').replace(/\s+/, ' '); // improve formatting
+      throw new Error("Parsing XML failed: " + txt);
+    }
+    return doc;
+  }  
 }
 
 const ROWS = 8;
@@ -26,12 +58,6 @@ const skipFiles = [
 // char code for uppercase A
 const aCharCode = 'A'.charCodeAt(0);
 
-
-function parseDOM(str, mimetype) {
-  return new JSDOM(str, {
-    contentType: mimetype
-  }).window.document;
-}
 
 function loadTemplate(filepath, cb) {
   fs.readFile(filepath, {encoding: 'utf8'}, function(err, data) {
@@ -197,7 +223,7 @@ function genPlateSetup(data, cb) {
   if(!data.barcode || !data.wells) {
     return cb(new Error("barcode and wells are required in order to generate plate_setup.xml"));
   }
-  loadTemplate('template/apldbio/sds/plate_setup.xml', function(err, doc) {
+  loadTemplate(path.join(__dirname, 'template/apldbio/sds/plate_setup.xml'), function(err, doc) {
     if(err) return cb(err);
 
     var node = doc.querySelector('Plate > BarCode');
@@ -243,7 +269,7 @@ function genPlateSetup(data, cb) {
 
 
 function genExperiment(dirpath, filename, data, cb) {
-  loadTemplate('template/apldbio/sds/experiment.xml', function(err, doc) {
+  loadTemplate(path.join(__dirname, 'template/apldbio/sds/experiment.xml'), function(err, doc) {
     if(err) return cb(err);
 
     var node = doc.querySelector('Experiment > Name');
@@ -298,15 +324,15 @@ function shouldSkip(filepath) {
   return false;
 }
 
-function edsFromTemplate(plateSetup, experiment, analysisProtocol, cb) {
+function edsFromTemplate(plateSetup, experiment, analysisProtocol, type, cb) {
   const zip = new JSZip();
-  const pathStream = klaw('template');
+  const pathStream = klaw(path.join(__dirname, 'template'));
 
   var curPath;
   pathStream.pipe(through.obj(function(item, enc, next) {
 
-    curPath = path.relative('template', item.path)
-
+    curPath = path.relative(path.join(__dirname, 'template'), item.path)
+    
     if(item.stats.isDirectory()) {
       zip.folder(curPath);
     } else {
@@ -325,7 +351,7 @@ function edsFromTemplate(plateSetup, experiment, analysisProtocol, cb) {
     zip.file('apldbio/sds/analysis_protocol.xml', analysisProtocol);
     
     zip.generateAsync({
-      type: 'nodebuffer',
+      type: 'nodebuffer' || type,
       compression: "DEFLATE",
       compressionOptions: {
         level: 6
@@ -425,7 +451,7 @@ function insertAllBefore(nodes, beforeNode) {
 }
 
 function genAnalysisProtocol(data, cb) {
-  loadTemplate('template/apldbio/sds/analysis_protocol.xml', function(err, doc) {
+  loadTemplate(path.join(__dirname, 'template/apldbio/sds/analysis_protocol.xml'), function(err, doc) {
     if(err) return cb(err);
 
     var nodes = doc.querySelectorAll('JaxbAnalysisProtocol > JaxbAnalysisSettings');
@@ -458,7 +484,7 @@ function genAnalysisProtocol(data, cb) {
 }
 
 
-function generate(dirPath, filename, data, cb) {
+function generate(dirPath, filename, data, type, cb) {
   genPlateSetup(data, function(err, plateSetup) {
     if(err) return cb(err);
     
@@ -468,7 +494,7 @@ function generate(dirPath, filename, data, cb) {
       genAnalysisProtocol(data, function(err, analysisProtocol) {
         if(err) return cb(err);
         
-        edsFromTemplate(plateSetup, experiment, analysisProtocol, cb);
+        edsFromTemplate(plateSetup, experiment, analysisProtocol, type, cb);
 
       });
     });
