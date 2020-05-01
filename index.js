@@ -648,7 +648,7 @@ function niceHeader(header) {
   var i;
   for(i=0; i < header.length; i++) {
     if(!header[i]) continue;
-    header[i] = header[i].trim().toLowerCase().replace(/\s+/, '_');
+    header[i] = header[i].trim().toLowerCase().replace(/\s+/g, '_');
   }
   return header;
 }
