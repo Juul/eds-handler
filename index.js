@@ -295,15 +295,22 @@ function genExperiment(dirpath, filename, data, cb) {
 
     var allSamples = [];
 
+    var seenNames = [];
+    
     var wellName, sampleName, wellIndex;
     for(wellName in data.wells) {
       wellIndex = wellToIndex(wellName);
       sampleName = data.wells[wellName];
+
+      if(seenNames.indexOf(sampleName) >= 0) {
+        continue;
+      }
       
       allSamples.push({
         index: wellIndex,
         node: newSample(doc, sampleName, true)
       });
+      seenNames.push(sampleName);
     }
 
     allSamples.sort(function(a, b) {
