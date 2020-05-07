@@ -32,7 +32,7 @@ if(typeof Node === 'undefined') {
     var doc = parser.parseFromString(str, mimetype);
 
     // Check for errors according to:
-    // see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
+    // https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
     var errs = doc.getElementsByTagName('parsererror');
     if(errs.length) {
       var txt = errs[0].textContent;
@@ -52,7 +52,8 @@ const COLS = 12;
 const skipFiles = [
   'experiment.xml',
   'plate_setup.xml',
-  'analysis_protocol.xml'
+  'analysis_protocol.xml',
+  'tcprotocol.xml'
 ];
 
 // char code for uppercase A
@@ -338,7 +339,7 @@ function shouldSkip(filepath) {
   return false;
 }
 
-function edsFromTemplate(plateSetup, experiment, analysisProtocol, type, cb) {
+function edsFromTemplate(plateSetup, experiment, analysisProtocol, tcProtocol, type, cb) {
   const zip = new JSZip();
   const pathStream = klaw(path.join(__dirname, 'template'));
 
@@ -363,6 +364,7 @@ function edsFromTemplate(plateSetup, experiment, analysisProtocol, type, cb) {
     zip.file('apldbio/sds/plate_setup.xml', plateSetup);
     zip.file('apldbio/sds/experiment.xml', experiment);
     zip.file('apldbio/sds/analysis_protocol.xml', analysisProtocol);
+    zip.file('apldbio/sds/tcprotocol.xml', tcProtocol);
     
     zip.generateAsync({
       type: 'nodebuffer' || type,
@@ -497,8 +499,28 @@ function genAnalysisProtocol(data, cb) {
   });
 }
 
+function genTCProtocol(data, opts, cb) {
+  loadTemplate(path.join(__dirname, 'template/apldbio/sds/tcprotocol.xml'), function(err, doc) {
+    if(err) return cb(err);
 
-function generate(dirPath, filename, data, type, cb) {
+    opts = Object.assign({
+      sampleVolume: 30.0
+    }, opts);
+
+    const sampleVolume = (Math.round(opts.sampleVolume * 10) / 10).toFixed(1);
+    var node = doc.querySelector('TCProtocol > SampleVolume');
+    node.innerHTML = sampleVolume;
+    
+    cb(null, doc.documentElement.outerHTML);
+  });
+}
+
+function generate(dirPath, filename, data, type, opts, cb) {
+  if(typeof opts === 'function') {
+    cb = opts;
+    opts = {};
+  }
+  opts = opts || {};
   genPlateSetup(data, function(err, plateSetup) {
     if(err) return cb(err);
     
@@ -508,8 +530,12 @@ function generate(dirPath, filename, data, type, cb) {
       genAnalysisProtocol(data, function(err, analysisProtocol) {
         if(err) return cb(err);
         
-        edsFromTemplate(plateSetup, experiment, analysisProtocol, type, cb);
-
+        genTCProtocol(data, opts, function(err, tcProtocol) {
+          if(err) return cb(err);
+          
+          edsFromTemplate(plateSetup, experiment, analysisProtocol, tcProtocol, type, cb);
+          
+        });
       });
     });
   });
